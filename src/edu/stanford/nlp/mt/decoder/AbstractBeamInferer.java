@@ -14,6 +14,8 @@ import java.util.stream.IntStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import edu.stanford.nlp.mt.decoder.feat.Featurizer;
+import edu.stanford.nlp.mt.decoder.feat.base.NGramLanguageModelFeaturizer;
 import edu.stanford.nlp.mt.decoder.recomb.RecombinationFilter;
 import edu.stanford.nlp.mt.decoder.recomb.RecombinationHistory;
 import edu.stanford.nlp.mt.decoder.util.Beam;
@@ -101,6 +103,12 @@ abstract public class AbstractBeamInferer<TK, FV> extends
       List<Beam<Derivation<TK,FV>>> beams, int sourceInputId, OutputSpace<TK, FV> outputSpace) {
     if (source == null || source.size() == 0 || prefix == null || prefix.size() == 0) return 0;
     
+    for (Featurizer<TK,FV> f : featurizer.getFeaturizers()) {
+      if (f instanceof NGramLanguageModelFeaturizer)
+        ((NGramLanguageModelFeaturizer) f).startUsingCache();
+    }
+    
+    
     // Sort rule list by target
     PrefixRuleGrid<TK,FV> ruleGrid = new PrefixRuleGrid<TK,FV>(ruleList, source, prefix);
     
@@ -139,7 +147,8 @@ abstract public class AbstractBeamInferer<TK, FV> extends
           CoverageSet testCoverage = antecedent.sourceCoverage.clone();
           testCoverage.or(rule.sourceCoverage);
           int succCardinality = testCoverage.cardinality();
-          boolean capacityExceeded = hypsForBeam[succCardinality] > MAX_HYPS_PER_BEAM;
+          //boolean capacityExceeded = hypsForBeam[succCardinality] > MAX_HYPS_PER_BEAM;
+          boolean capacityExceeded = hypsForBeam[succCardinality] > beams.get(succCardinality).capacity();
           if (capacityExceeded) continue; // Check beam capacity
           Derivation<TK,FV> successor = new Derivation<>(sourceInputId, rule, insertionPosition, antecedent, featurizer,
               scorer, heuristic, outputSpace);
@@ -160,6 +169,11 @@ abstract public class AbstractBeamInferer<TK, FV> extends
       }
     }
     logger.info("Input {}: {} prefix hypotheses generated", sourceInputId, numHyps);
+    
+    // this is ugly
+    for (Featurizer<TK,FV> f : featurizer.getFeaturizers()) 
+      if (f instanceof NGramLanguageModelFeaturizer)
+        ((NGramLanguageModelFeaturizer) f).stopUsingCache();
     
     // WSGDEBUG
 //    for (int i = 0; i < beams.size(); ++i) {

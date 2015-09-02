@@ -172,7 +172,7 @@ public class CubePruningDecoder<TK,FV> extends AbstractBeamInferer<TK, FV> {
     for (int i = startOfDecoding; i <= sourceLength; i++) {
       int rootBeam = prefilledBeams ? minSourceCoverage : 0;
       int minCoverage = i - maxPhraseLength;
-      int startBeam = Math.max(rootBeam, minCoverage);
+      int startBeam = Math.max(rootBeam, minCoverage); // this always equals rootBeam
 
       // Initialize the priority queue
       Queue<Item<TK,FV>> pq = new PriorityQueue<>(2*beamCapacity);
