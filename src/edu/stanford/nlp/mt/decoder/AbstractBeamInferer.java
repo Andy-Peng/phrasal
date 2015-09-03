@@ -148,7 +148,7 @@ abstract public class AbstractBeamInferer<TK, FV> extends
           testCoverage.or(rule.sourceCoverage);
           int succCardinality = testCoverage.cardinality();
           //boolean capacityExceeded = hypsForBeam[succCardinality] > MAX_HYPS_PER_BEAM;
-          boolean capacityExceeded = hypsForBeam[succCardinality] > beams.get(succCardinality).capacity();
+          boolean capacityExceeded = hypsForBeam[succCardinality] >= beams.get(succCardinality).capacity();
           if (capacityExceeded) continue; // Check beam capacity
           Derivation<TK,FV> successor = new Derivation<>(sourceInputId, rule, insertionPosition, antecedent, featurizer,
               scorer, heuristic, outputSpace);
