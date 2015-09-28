@@ -89,8 +89,8 @@ public class SoftPrefixOutputSpace implements OutputSpace<IString, String> {
         sourceCoverage.set(i);
         int cntE = isTargetOOV ? 1 : cnt_e;
         int cntF = isSourceOOV ? 1 : cnt_f;
-        int cnt_joint = tmList.stream().mapToInt(tm -> tm.getJointLexCount(sourceQuery, targetQuery)).sum();
-        if (cnt_joint == 0) cnt_joint = 1;
+        double cnt_joint = tmList.stream().mapToInt(tm -> tm.getJointLexCount(sourceQuery, targetQuery)).sum();
+        if (cnt_joint == 0) cnt_joint = 1e-6;
         ConcreteRule<IString,String> syntheticRule = SyntheticRules.makeSyntheticRule(source, target, 
             sourceCoverage, featureNames, inferer.scorer, inferer.featurizer, 
             cnt_joint, cntE, cntF, inputProperties, sourceSequence, sourceInputId);
